@@ -11,6 +11,8 @@ import { PublicEnvScript } from "next-runtime-env";
 import { ThemeProvider } from "next-themes";
 import { Inter as FontSans } from "next/font/google";
 import React from "react";
+import { getSession } from '@/lib/session'
+import AuthWrapper from '@/components/AuthWrapper'
 
 import "/node_modules/flag-icons/css/flag-icons.min.css";
 
@@ -44,7 +46,7 @@ export async function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }
 
-export default function LocaleLayout({
+export default async function LocaleLayout({
   children,
   params: { locale },
 }: {
@@ -54,6 +56,9 @@ export default function LocaleLayout({
   unstable_setRequestLocale(locale);
 
   const messages = useMessages();
+  const session = await getSession();
+  const isLoggedIn = session.isLoggedIn ?? false;
+
   return (
     <html lang={locale} suppressHydrationWarning>
       <head>
@@ -72,7 +77,9 @@ export default function LocaleLayout({
           disableTransitionOnChange
         >
           <NextIntlClientProvider locale={locale} messages={messages}>
-            {children}
+            <AuthWrapper isLoggedIn={isLoggedIn}>
+              {children}
+            </AuthWrapper>
           </NextIntlClientProvider>
         </ThemeProvider>
       </body>
